@@ -1,0 +1,239 @@
+diff --git a/alfood-main/.dockerignore b/alfood-main/.dockerignore
+new file mode 100644
+index 0000000..ef0824b
+--- /dev/null
++++ b/alfood-main/.dockerignore
+@@ -0,0 +1,4 @@
++node_modules
++build
++.git
++npm-debug.log
+diff --git a/alfood-main/Dockerfile b/alfood-main/Dockerfile
+new file mode 100644
+index 0000000..80cfdda
+--- /dev/null
++++ b/alfood-main/Dockerfile
+@@ -0,0 +1,11 @@
++FROM node:16-alpine AS build
++WORKDIR /app
++COPY package*.json ./
++RUN npm ci
++COPY . .
++RUN npm run build
++
++FROM nginx:1.27-alpine
++COPY nginx.conf /etc/nginx/conf.d/default.conf
++COPY --from=build /app/build /usr/share/nginx/html
++EXPOSE 80
+diff --git a/alfood-main/nginx.conf b/alfood-main/nginx.conf
+new file mode 100644
+index 0000000..16f04e3
+--- /dev/null
++++ b/alfood-main/nginx.conf
+@@ -0,0 +1,27 @@
++server {
++    listen 80;
++    server_name _;
++
++    root /usr/share/nginx/html;
++    index index.html;
++
++    location /api/ {
++        proxy_pass http://backend:8000/api/;
++        proxy_set_header Host $host;
++        proxy_set_header X-Real-IP $remote_addr;
++        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
++        proxy_set_header X-Forwarded-Proto $scheme;
++    }
++
++    location /media/ {
++        proxy_pass http://backend:8000/media/;
++        proxy_set_header Host $host;
++        proxy_set_header X-Real-IP $remote_addr;
++        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
++        proxy_set_header X-Forwarded-Proto $scheme;
++    }
++
++    location / {
++        try_files $uri $uri/ /index.html;
++    }
++}
+diff --git a/alfood-main/src/componentes/ListaRestaurantes/index.tsx b/alfood-main/src/componentes/ListaRestaurantes/index.tsx
+index 174d178..b9bd594 100644
+--- a/alfood-main/src/componentes/ListaRestaurantes/index.tsx
++++ b/alfood-main/src/componentes/ListaRestaurantes/index.tsx
+@@ -1,98 +1,56 @@
++import { useEffect, useState } from 'react';
++import { IPaginacao } from '../../interfaces/IPaginacao';
+ import IRestaurante from '../../interfaces/IRestaurante';
+ import style from './ListaRestaurantes.module.scss';
+ import Restaurante from './Restaurante';
+ 
+ const ListaRestaurantes = () => {
++  const [restaurantes, setRestaurantes] = useState<IRestaurante[]>([]);
++  const [carregando, setCarregando] = useState(true);
++  const [erro, setErro] = useState('');
+ 
+-  const restaurantes: IRestaurante[] = [
+-    {
+-      id: 1,
+-      nome: "Lyllys Cafe",
+-      pratos: [
+-        {
+-          id: 1,
+-          descricao: 'Lasanha à Bolonhesa',
+-          imagem: 'https://receitassaborosa.com/wp-content/uploads/2019/12/Lasanha-com-Molho-a-Bolonhesa.jpg',
+-          nome: 'Lasanha',
+-          restaurante: 1,
+-          tag: 'Italiana'
+-        },
+-        {
+-          id: 2,
+-          descricao: 'Strogonoff de Frango à brasileira',
+-          imagem: 'https://img.itdg.com.br/images/recipes/000/002/462/332854/332854_original.jpg',
+-          nome: 'Strogonoff',
+-          restaurante: 1,
+-          tag: 'Russa'
+-        },
+-        {
+-          id: 3,
+-          descricao: 'Empadão de Frango',
+-          imagem: 'https://t1.uc.ltmcdn.com/pt/images/5/7/1/img_como_fazer_empadao_de_frango_27175_600.jpg',
+-          nome: 'Empadão de Frango',
+-          restaurante: 1,
+-          tag: 'Portuguesa'
+-        }
+-      ]
+-    },
+-    {
+-      id: 2,
+-      nome: "Sugiro Sushi",
+-      pratos: [
+-        {
+-          id: 1,
+-          descricao: 'Combinado de 8 peças',
+-          imagem: 'https://www.sabornamesa.com.br/media/k2/items/cache/5031e263a4a258791d6306b2d3d9dbf6_XL.jpg',
+-          nome: 'Sushi',
+-          restaurante: 1,
+-          tag: 'Japonesa'
+-        },
+-        {
+-          id: 2,
+-          descricao: 'Sashimi de Salmão',
+-          imagem: 'https://www.comidaereceitas.com.br/img/sizeswp/1200x675/2009/04/sashimi_facil.jpg',
+-          nome: 'Sashimi',
+-          restaurante: 1,
+-          tag: 'Japonesa'
+-        }
+-      ]
+-    },
+-    {
+-      id: 3,
+-      nome: "Cantina da Escola",
+-      pratos: [
+-        {
+-          id: 1,
+-          descricao: 'Salgado de queijo com presunto',
+-          imagem: 'https://img.itdg.com.br/tdg/images/recipes/000/102/312/279767/279767_original.jpg',
+-          nome: 'Quejunto',
+-          restaurante: 1,
+-          tag: 'Lanche'
+-        },
+-        {
+-          id: 2,
+-          descricao: 'Coxinha de Frango',
+-          imagem: 'https://t1.rg.ltmcdn.com/pt/posts/1/9/1/coxinha_simples_191_600.jpg',
+-          nome: 'Coxinha',
+-          restaurante: 1,
+-          tag: 'Lanche'
+-        },
+-        {
+-          id: 3,
+-          descricao: 'Risole de Palmito',
+-          imagem: 'https://img.itdg.com.br/tdg/images/recipes/000/005/116/323871/323871_original.jpg',
+-          nome: 'Risole',
+-          restaurante: 1,
+-          tag: 'Lanche'
++  useEffect(() => {
++    const carregarRestaurantes = async () => {
++      try {
++        const resposta = await fetch('/api/v1/restaurantes/');
++
++        if (!resposta.ok) {
++          throw new Error('Erro ao carregar restaurantes');
+         }
+-      ]
+-    }
+-  ]
++
++        const paginacao: IPaginacao<Omit<IRestaurante, 'pratos'>> = await resposta.json();
++        const restaurantesComPratos = await Promise.all(
++          paginacao.results.map(async (restaurante) => {
++            const respostaPratos = await fetch(`/api/v1/restaurantes/${restaurante.id}/pratos/`);
++
++            if (!respostaPratos.ok) {
++              throw new Error('Erro ao carregar pratos');
++            }
++
++            return {
++              ...restaurante,
++              pratos: await respostaPratos.json()
++            };
++          })
++        );
++
++        setRestaurantes(restaurantesComPratos);
++      } catch (erro) {
++        setErro('Nao foi possivel carregar os restaurantes.');
++      } finally {
++        setCarregando(false);
++      }
++    };
++
++    carregarRestaurantes();
++  }, []);
+ 
+   return (<section className={style.ListaRestaurantes}>
+     <h1>Os restaurantes mais <em>bacanas</em>!</h1>
++    {carregando && <p>Carregando restaurantes...</p>}
++    {erro && <p>{erro}</p>}
+     {restaurantes?.map(item => <Restaurante restaurante={item} key={item.id} />)}
+   </section>)
+ }
+ 
+-export default ListaRestaurantes
+\ No newline at end of file
++export default ListaRestaurantes
+diff --git a/docker-compose.yml b/docker-compose.yml
+new file mode 100644
+index 0000000..175defc
+--- /dev/null
++++ b/docker-compose.yml
+@@ -0,0 +1,11 @@
++services:
++  backend:
++    build: ./restaurantes_api-master
++    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py loaddata seed.json && python manage.py runserver 0.0.0.0:8000"
++
++  frontend:
++    build: ./alfood-main
++    depends_on:
++      - backend
++    ports:
++      - "80:80"
+diff --git a/restaurantes_api-master/docker-compose.yml b/restaurantes_api-master/docker-compose.yml
+index 495f774..2746218 100644
+--- a/restaurantes_api-master/docker-compose.yml
++++ b/restaurantes_api-master/docker-compose.yml
+@@ -1,9 +1,6 @@
+-version: '3.8'
+ services:
+    web:
+       build: .
+       command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py loaddata seed.json && python manage.py runserver 0.0.0.0:8000"
+-      volumes:
+-      - .:/app
+       ports:
+-          - 8000:8000
+\ No newline at end of file
++          - "8000:8000"
