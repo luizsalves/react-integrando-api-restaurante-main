@@ -13,7 +13,7 @@ function App() {
       <div className={estilos.MiniBanners}>
         <img src="/imagens/cozinhar_01.jpg" alt="Um prato conceitual" />
         <div className={estilos.CardCentral}>
-          <h2>A melhor rede de restaurantes!</h2>
+          <h2>A melhor rede de restaurantes de Paraiso!</h2>
           <div>
             <p>seja um parceiro agora:</p>
             <p>ligue para <a href="callto:99999999999">(99) 99999-999</a></p>
