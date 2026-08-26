@@ -96,7 +96,7 @@ const ListaRestaurantes = () => {
     axios.get('http://76.13.236.90:8000/api/v1/restaurantes/')
       .then(resposta => 
         console.log(resposta))
-      })
+      
       .catch(erro => {
         console.log(erro)
       })
