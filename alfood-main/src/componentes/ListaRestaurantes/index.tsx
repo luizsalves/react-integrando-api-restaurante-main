@@ -14,7 +14,7 @@ const ListaRestaurantes = () => {
         {
           id: 1,
           descricao: 'Lasanha à Bolonhesa',
-          imagem: 'https://receitassaborosa.com/wp-content/uploads/2019/12/Lasanha-com-Molho-a-Bolonhesa.jpg',
+          imagem: '/imagens/lasanha.png',
           nome: 'Lasanha',
           restaurante: 1,
           tag: 'Italiana'
@@ -22,7 +22,7 @@ const ListaRestaurantes = () => {
         {
           id: 2,
           descricao: 'Strogonoff de Frango à brasileira',
-          imagem: 'https://img.itdg.com.br/images/recipes/000/002/462/332854/332854_original.jpg',
+          imagem: '/imagens/strogonofe.jpg',
           nome: 'Strogonoff',
           restaurante: 1,
           tag: 'Russa'
@@ -30,7 +30,7 @@ const ListaRestaurantes = () => {
         {
           id: 3,
           descricao: 'Empadão de Frango',
-          imagem: 'https://t1.uc.ltmcdn.com/pt/images/5/7/1/img_como_fazer_empadao_de_frango_27175_600.jpg',
+          imagem: '/imagens/empadao.jpg',
           nome: 'Empadão de Frango',
           restaurante: 1,
           tag: 'Portuguesa'
@@ -66,7 +66,7 @@ const ListaRestaurantes = () => {
         {
           id: 1,
           descricao: 'Salgado de queijo com presunto',
-          imagem: 'https://img.itdg.com.br/tdg/images/recipes/000/102/312/279767/279767_original.jpg',
+          imagem: '/imagens/queijo.jpg',
           nome: 'Quejunto',
           restaurante: 1,
           tag: 'Lanche'
@@ -74,7 +74,7 @@ const ListaRestaurantes = () => {
         {
           id: 2,
           descricao: 'Coxinha de Frango',
-          imagem: 'https://t1.rg.ltmcdn.com/pt/posts/1/9/1/coxinha_simples_191_600.jpg',
+          imagem: '/imagens/coxinha.jpg',
           nome: 'Coxinha',
           restaurante: 1,
           tag: 'Lanche'
@@ -82,7 +82,7 @@ const ListaRestaurantes = () => {
         {
           id: 3,
           descricao: 'Risole de Palmito',
-          imagem: 'https://img.itdg.com.br/tdg/images/recipes/000/005/116/323871/323871_original.jpg',
+          imagem: '/imagens/risole.png',
           nome: 'Risole',
           restaurante: 1,
           tag: 'Lanche'
