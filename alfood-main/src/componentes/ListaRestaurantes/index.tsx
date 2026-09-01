@@ -9,14 +9,14 @@ const ListaRestaurantes = () => {
 
   const [restaurantes, setRestaurantes] = useState<IRestaurante[]>([])
 
-  const [proximapagina, setProximaPagina] = useState('')
+  const [proximaPagina, setProximaPagina] = useState('')
 
   useEffect(() => {
     // obter restaurantes da API
-    axios.get < IPaginacao<IRestaurante>('/api/v1/restaurantes/')
+    axios.get<IPaginacao<IRestaurante>>('/api/v1/restaurantes/')
       .then(resposta => {
         setRestaurantes(resposta.data.results)
-        setproximaPagina(resposta.data.next)
+        setProximaPagina(resposta.data.next)
       })
       .catch(erro => {
         console.log(erro)
