@@ -37,7 +37,7 @@ const ListaRestaurantes = () => {
   }
 
   return (<section className={style.ListaRestaurantes}>
-    <h1>Os restaurantes mais <em>bacanas 4</em>!</h1>
+    <h1>Os restaurantes mais <em>bacanas 6</em>!</h1>
     {restaurantes?.map(item => <Restaurante restaurante={item} key={item.id} />)}
     {proximaPagina && <button onClick={verMais}>
       ver mais
